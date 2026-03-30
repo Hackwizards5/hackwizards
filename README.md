@@ -1,9 +1,9 @@
 # Deepfake Evidence Verification System
 ## Problem Statement
--In today’s digital world, videos, images, and audio are widely used as evidence. However, the rise of deepfake technology makes it difficult to distinguish between real and manipulated media. This creates serious risks in legal, social, and security domains.
+- In today’s digital world, videos, images, and audio are widely used as evidence. However, the rise of deepfake technology makes it difficult to distinguish between real and manipulated media. This creates serious risks in legal, social, and security domains.
 - Our goal is to build a system that can analyze and verify the authenticity of media files and detect possible deepfake manipulations.
 ## Solution Overview
--We developed a Deepfake Evidence Verification System that analyzes uploaded video/audio using AI and forensic techniques.
+- We developed a Deepfake Evidence Verification System that analyzes uploaded video/audio using AI and forensic techniques.
 ## The system:
 - Extracts frames and audio from media
 - Detects facial inconsistencies and unnatural patterns
