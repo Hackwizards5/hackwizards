@@ -40,7 +40,7 @@
 - Metadata is checked
 - Scores combined → Final verdict generated
 - Results displayed on dashboard
-# mermaid
+ ''' mermaid
 flowchart LR
 
 %% USER FLOW
