@@ -55,3 +55,41 @@ We extract frames using a highly optimized native OpenCV pipeline, run local fac
        │
        ▼
 [ React Dashboard ] (Renders classification, score, and forensic text)
+``` 
+
+## ⚙️ Setup and Installation Steps
+git clone 
+
+### Prerequisites
+* Python 3.11
+* Node.js & npm
+* `uv` package manager (`pip install uv`)
+* A Google Gemini API Key
+* MongoDB (Local installation or MongoDB Atlas URI)
+
+### 1. Backend Setup
+Navigate to the backend directory:
+```bash
+cd backend 
+Create a .env file in the backend folder and add your credentials:
+GEMINI_API_KEY=your_google_api_key_here
+MONGO_URI=mongodb://localhost:27017  # Or your MongoDB Atlas URI
+Install dependencies and run the server using uv:
+uv venv --python 3.11
+uv sync
+uv run python main.py
+```
+2. Frontend Setup
+Open a new terminal and navigate to the frontend directory:
+ ``` cd frontend
+npm install
+npm run dev
+The frontend will start at http://localhost:5173
+```
+## 🚀 Usage Instructions
+- Open your browser and go to http://localhost:5173.
+- Drag and drop a valid video file (.mp4, .mov, .avi) into the upload zone.
+- Click "Begin Forensic Scan".
+- Watch the real-time terminal logs as the video is processed locally and in the cloud.
+Review the final Overview Report, noting the classification, specific forensic charts, and the Gemini text analysis.
+
