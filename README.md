@@ -40,3 +40,45 @@
 - Metadata is checked
 - Scores combined → Final verdict generated
 - Results displayed on dashboard
+ ''' mermaid
+flowchart LR
+
+%% USER FLOW
+A[User] --> B[Upload Video/Audio]
+
+%% BACKEND
+B --> C[FastAPI Server]
+C --> D[FFmpeg & OpenCV\nFrame + Audio Extraction]
+D --> E[Job Orchestration (Python)]
+
+%% ANALYSIS PIPELINE
+E --> F[Visual Inconsistency Detection\n- Facial Landmarks\n- Blink / Lip-sync\n- Geometry]
+E --> G[Deep Content Analysis\n- Frames + Audio\n- Artifact Detection]
+E --> H[Metadata Extraction\n- Codec Info\n- Tampering Checks]
+
+%% INTERMEDIATE OUTPUTS
+F --> I[Frames (e.g., 2 fps)]
+F --> J[Audio (sampled)]
+G --> J
+
+%% SCORING
+F --> K[Weighted Scoring Engine]
+G --> K
+H --> K
+
+%% FINAL RESULT
+K --> L[Final Verdict\n(Genuine / Manipulated)\n+ Confidence Score]
+
+%% STORAGE
+L --> M[MongoDB Atlas\nForensic Logs & Results]
+
+%% REPORTS
+M --> N[Forensic Report\nScores & Evidence]
+M --> O[Highlighted Frames\nwith Issues]
+M --> P[Dashboard / Demo View]
+
+%% DASHBOARD
+N --> Q[Results Dashboard]
+O --> Q
+P --> Q
+
