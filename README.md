@@ -40,8 +40,8 @@
 - Metadata is checked
 - Scores combined → Final verdict generated
 - Results displayed on dashboard
-  ```mermaid
-  flowchart LR
+ ` ` `mermaid
+flowchart LR
 
 A[User] --> B[Upload Video / Audio]
 B --> C[FastAPI Server]
@@ -69,11 +69,3 @@ H --> K
 
 K --> L[Final Verdict (Genuine / Manipulated + Confidence Score)]
 L --> M[MongoDB Atlas (Logs & Results)]
-
-M --> N[Forensic Report]
-M --> O[Highlighted Frames]
-M --> P[Dashboard / Demo View]
-
-N --> Q[Results Dashboard]
-O --> Q
-P --> Q
