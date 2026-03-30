@@ -1,6 +1,6 @@
 import cv2
 
-# SENIOR PIVOT: Use OpenCV's built-in AI face detector. 
+#  Use OpenCV's built-in AI face detector. 
 # It is 100% local, blazing fast, and already installed on your machine.
 cascade_path = cv2.data.haarcascades + 'haarcascade_frontalface_default.xml'
 face_cascade = cv2.CascadeClassifier(cascade_path)
