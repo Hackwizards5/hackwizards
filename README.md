@@ -32,11 +32,11 @@
 - Database
 - MongoDB Atlas (forensic logs & results storage)
 ## Architecture (Overview)
--User uploads media
--Backend processes file using FFmpeg & OpenCV
--Frames & audio sent for AI analysis
--MediaPipe detects facial inconsistencies
--Gemini API analyzes deepfake artifacts
--Metadata is checked
--Scores combined → Final verdict generated
--Results displayed on dashboard
+- User uploads media
+- Backend processes file using FFmpeg & OpenCV
+- Frames & audio sent for AI analysis
+- MediaPipe detects facial inconsistencies
+- Gemini API analyzes deepfake artifacts
+- Metadata is checked
+- Scores combined → Final verdict generated
+- Results displayed on dashboard
