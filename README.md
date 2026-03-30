@@ -21,16 +21,16 @@
 - Tech Stack Used
 ## Backend
 
--Python (FastAPI)
--OpenCV (frame extraction)
--FFmpeg (media processing)
--AI & Detection
--Google MediaPipe (facial landmarks)
--Gemini 1.5 Flash API (deepfake detection & analysis)
+- Python (FastAPI)
+- OpenCV (frame extraction)
+- FFmpeg (media processing)
+- AI & Detection
+- Google MediaPipe (facial landmarks)
+- Gemini 1.5 Flash API (deepfake detection & analysis)
 ## Frontend
--ReactJS (user interface & dashboard)
--Database
--MongoDB Atlas (forensic logs & results storage)
+- ReactJS (user interface & dashboard)
+- Database
+- MongoDB Atlas (forensic logs & results storage)
 ## Architecture (Overview)
 -User uploads media
 -Backend processes file using FFmpeg & OpenCV
