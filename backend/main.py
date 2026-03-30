@@ -1,62 +1,38 @@
 from fastapi import FastAPI, UploadFile, File
 import uvicorn
-import cv2
 import os
-import shutil
+
+# Import the logic from our new modular files
+from video_extractor import extract_frames_from_video
+from ai_analyzer import analyze_frames_with_gemini
 
 app = FastAPI(title="Hackwizards Deepfake API")
 
-# Create folders to store the temporary uploads and the extracted frames
+# Ensure our directories exist when the server starts
 os.makedirs("temp_uploads", exist_ok=True)
 os.makedirs("extracted_frames", exist_ok=True)
 
 @app.get("/")
 async def root():
-    return {"message": "Hackwizards Backend is live!"}
+    return {"message": "Hackwizards Backend is live, modular, and powered by AI!"}
 
 @app.post("/api/analyze")
 async def analyze_media(file: UploadFile = File(...)):
-    # 1. Save the uploaded file temporarily to disk
-    temp_video_path = f"temp_uploads/{file.filename}"
-    with open(temp_video_path, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
     
-    # 2. Open the video with OpenCV
-    cap = cv2.VideoCapture(temp_video_path)
+    # 1. Slice the video into frames using our extractor module
+    extracted_files, saved_frame_count = extract_frames_from_video(file)
     
-    if not cap.isOpened():
-        return {"error": "Could not open video file."}
-        
-    # Get the Frames Per Second (FPS) of the video
-    fps = cap.get(cv2.CAP_PROP_FPS)
-    
-    # Calculate how many frames to skip to get exactly 2 frames per second
-    # If a video is 30 fps, we want a frame every 15 frames.
-    frame_interval = int(fps / 2) 
-    
-    saved_frame_count = 0
-    current_frame = 0
-    success, image = cap.read()
-    
-    # 3. Loop through the video and save the frames
-    while success:
-        if current_frame % frame_interval == 0:
-            frame_filename = f"extracted_frames/frame_{saved_frame_count}.jpg"
-            cv2.imwrite(frame_filename, image)
-            saved_frame_count += 1
-            
-        success, image = cap.read()
-        current_frame += 1
-        
-    cap.release()
-    
-    # Optional: Delete the temporary video file to save space
-    os.remove(temp_video_path)
+    if extracted_files is None:
+         return {"error": "Could not open video file."}
 
+    # 2. Send the frames to our AI brain module
+    analysis_result = analyze_frames_with_gemini(extracted_files)
+
+    # 3. Return the final report to the user
     return {
         "filename": file.filename,
-        "status": "Frames extracted successfully",
-        "total_frames_saved": saved_frame_count
+        "frames_extracted": saved_frame_count,
+        "gemini_analysis": analysis_result
     }
 
 if __name__ == "__main__":
