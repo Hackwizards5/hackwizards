@@ -1,40 +1,54 @@
 import os
+import time
 from google import genai
 from google.genai import types
 from dotenv import load_dotenv
 
-# Load environment variables (API Key) from the .env file
 load_dotenv()
-
-# Initialize the new SDK Client
 client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
-def analyze_frames_with_gemini(frame_paths):
-    """Sends extracted frames to Gemini for deepfake analysis using the new SDK."""
-    frames_to_analyze = frame_paths[:3] 
-    uploaded_gemini_files = []
-    
-    # Upload files using the new client.files API
-    for frame_path in frames_to_analyze:
-        g_file = client.files.upload(file=frame_path)
-        uploaded_gemini_files.append(g_file)
-        
-    prompt = """
-    You are an expert digital forensics analyst. Examine these video frames.
-    Look for specific deepfake artifacts: visual inconsistencies, unnatural eye blinking, 
-    lip-syncing errors, or "uncanny valley" effects in facial geometry.
-    Provide a brief forensic report and a final verdict of 'Genuine' or 'Manipulated'.
-    """
-    
+def analyze_full_video_with_gemini(video_path, opencv_anomalies=0):
+    """Uploads the video to Gemini and demands a mathematical scoring block."""
     try:
-        contents = [prompt] + uploaded_gemini_files
+        video_file = client.files.upload(file=video_path)
         
-        # Generate content using the new client.models API and the upgraded 2.5-flash model
+        while video_file.state.name == "PROCESSING":
+            time.sleep(2)
+            video_file = client.files.get(name=video_file.name)
+            
+        prompt = f"""
+        You are an objective, highly advanced Deepfake Forensics AI. 
+        You are analyzing a video file to determine if it is authentic camera footage or AI-generated.
+        
+        SYSTEM DATA: Local OpenCV tracking flagged {opencv_anomalies} spatial anomalies. (Note: 1-2 anomalies can happen in real videos due to fast movement. High anomalies imply deepfake spatial morphing).
+
+        Evaluate the video across these 5 dimensions. Score each from 0 to 100.
+        (100 = Perfectly natural/authentic human recording. 0 = Clearly AI-generated/glitchy).
+        1. ARTIFACTS: Any weird AI morphing, extra fingers, text glitches.
+        2. LIPSYNC: Does audio perfectly match mouth movements? (If no audio, assume 100).
+        3. TEXTURE: Is skin naturally porous and noisy, or is it overly smooth "plastic" AI skin?
+        4. TEMPORAL: Is the motion physics correct, or does the background/subject warp?
+        5. GEOMETRY: Do shapes stay solid, or do they melt/shimmer?
+
+        Provide a detailed forensic report explaining your observations.
+        
+        CRITICAL INSTRUCTION: At the very end of your response, you MUST include a strict scoring block EXACTLY in this format:
+        
+        ---SCORE_BLOCK---
+        OVERALL_SCORE: [Calculate the average of the 5 scores]
+        ARTIFACTS: [0-100]
+        LIPSYNC: [0-100]
+        TEXTURE: [0-100]
+        TEMPORAL: [0-100]
+        GEOMETRY: [0-100]
+        VERDICT: [GENUINE if OVERALL_SCORE >= 50 else MANIPULATED]
+        """
+        
         response = client.models.generate_content(
             model='gemini-2.5-flash',
-            contents=contents,
-            config=types.GenerateContentConfig(temperature=0.2)
+            contents=[video_file, prompt],
+            config=types.GenerateContentConfig(temperature=0.1) # Slight temperature to allow nuance, but mostly logical
         )
         return response.text
     except Exception as e:
-        return f"Error during AI analysis: {str(e)}" 
+        return f"Error during AI video analysis: {str(e)}"
