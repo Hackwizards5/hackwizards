@@ -1,38 +1,30 @@
 import React, { useState, useRef } from 'react';
 import axios from 'axios';
-import { UploadCloud, ShieldCheck, AlertTriangle, FileVideo, Activity, Clock, Loader2 } from 'lucide-react';
+import { UploadCloud, FileVideo, Activity, Terminal, ShieldAlert, ShieldCheck, Database, Camera } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import './App.css';
 
 function App() {
   const [file, setFile] = useState(null);
-  const [previewUrl, setPreviewUrl] = useState('');
   const [isDragging, setIsDragging] = useState(false);
   
-  // State for analysis pipeline
-  const [analysisState, setAnalysisState] = useState('idle'); // idle, processing, complete, error
+  const [analysisState, setAnalysisState] = useState('idle');
   const [progress, setProgress] = useState(0);
   const [realtimeLogs, setRealtimeLogs] = useState([]);
   
-  // Results from backend
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
   
   const fileInputRef = useRef(null);
 
-  // Helper function to append to real-time logs
-  const addLog = (message) => {
-    const timestamp = new Date().toLocaleTimeString();
-    setRealtimeLogs(prev => [...prev, `[${timestamp}] ${message}`]);
+  const addLog = (message, type = 'normal') => {
+    const timestamp = new Date().toLocaleTimeString('en-US', { hour12: false });
+    setRealtimeLogs(prev => [...prev, { time: timestamp, text: message, type }]);
   };
 
-  // Drag & Drop Handlers
   const handleFileSelection = (selectedFile) => {
     if (selectedFile && selectedFile.type.includes('video')) {
       setFile(selectedFile);
-      setPreviewUrl(URL.createObjectURL(selectedFile));
-      
-      // Reset dashboard state for new video
       setResult(null);
       setError('');
       setAnalysisState('idle');
@@ -51,7 +43,6 @@ function App() {
     handleFileSelection(e.dataTransfer.files[0]);
   };
 
-  // The main analysis orchestration logic
   const analyzeVideo = async () => {
     if (!file) return;
     
@@ -72,13 +63,12 @@ function App() {
       });
     };
 
-    await simulateProcessing("Media handling: Loading video data into browser...", 5, 200);
-    await simulateProcessing("I/O: Transmitting video to deepfake backend on port 8000...", 10, 200);
-    await simulateProcessing("OpenCV: Executing high-speed frame extraction pipeline...", 15, 300);
-    await simulateProcessing("Local Check: Initializing OpenCV facial tracking system...", 20, 200);
-    await simulateProcessing("Local Check: Running face detector on first 5 frames...", 25, 300);
-    await simulateProcessing("Multimodal Fusion: Uploading full video to Gemini API servers...", 40, 400);
-    addLog("Gemini: Performing deep temporal and audio consistency check. Please wait...");
+    await simulateProcessing("SYS: Loading video stream into memory...", 5, 200);
+    await simulateProcessing("NET: Establishing connection to backend engine...", 10, 200);
+    await simulateProcessing("CV2: Extracting temporal frames...", 15, 300);
+    await simulateProcessing("OPENCV: Running Haar Cascade geometry detection...", 25, 400);
+    await simulateProcessing("API: Uploading payload to Gemini Multimodal Engine...", 40, 500);
+    addLog("AI: Auditing spatial geometry and lip-sync variance...");
     setProgress(50);
     
     const formData = new FormData();
@@ -91,26 +81,25 @@ function App() {
       
       setResult(response.data);
       setProgress(90);
-      addLog("Gemini: Multi-factor visual report generated successfully.");
-      addLog("Database: Saving forensic audit log to MongoDB...");
+      addLog("AI: Multimodal grading complete.", "success");
+      addLog("DB: Committing immutable forensic log...");
       
       setTimeout(() => {
           if(response.data.database_id) {
-            addLog("Database: Audit log secured. ID: " + response.data.database_id);
+            addLog(`DB: Audit secured. ID: ${response.data.database_id.substring(0,8)}`, "success");
           }
           setProgress(100);
           setAnalysisState('complete');
-      }, 500);
+      }, 600);
 
     } catch (err) {
       console.error(err);
-      setError('Analysis pipeline failed. Check if backend is running on port 8000.');
-      addLog("CRITICAL: API connection lost. Check backend logs.");
+      setError('Analysis failed. Verify backend is running on port 8000.');
+      addLog("ERR: Connection refused. Analysis aborted.", "error");
       setAnalysisState('error');
     }
   };
 
-  // Helper to dynamically extract scores from Gemini's secret text block
   const extractScore = (text, key, defaultVal) => {
     if (!text) return defaultVal;
     const regex = new RegExp(`${key}:\\s*(\\d+)`, 'i');
@@ -118,13 +107,10 @@ function App() {
     return match ? parseInt(match[1], 10) : defaultVal;
   };
 
-  // Calculate Overall Genuine Score
   const genuineScore = result ? extractScore(result.gemini_forensic_report, 'OVERALL_SCORE', 100) : 100;
-  
-  // Calculate System Confidence mathematically
   const systemConfidence = genuineScore < 50 ? (100 - genuineScore) : genuineScore;
+  const isDanger = genuineScore < 50;
 
-  // Feed real AI data into the charts
   const getVisualizationData = (reportText) => {
     let artifacts = extractScore(reportText, 'ARTIFACTS', 95);
     let lipsync = extractScore(reportText, 'LIPSYNC', 90);
@@ -133,161 +119,189 @@ function App() {
     let geometry = extractScore(reportText, 'GEOMETRY', 99);
     
     return [
-      { name: 'Visual Integrity', Score: artifacts },
-      { name: 'Lipsync Alignment', Score: lipsync },
-      { name: 'Texture Stability', Score: texture },
-      { name: 'Temporal Flow', Score: temporal },
-      { name: 'Geometric Rigidity', Score: geometry },
+      { name: 'Visual', Score: artifacts },
+      { name: 'Lipsync', Score: lipsync },
+      { name: 'Texture', Score: texture },
+      { name: 'Temporal', Score: temporal },
+      { name: 'Geometry', Score: geometry },
     ].map(item => ({
         ...item, 
-        fill: item.Score <= 49 ? 'var(--danger)' : item.Score <= 75 ? 'var(--warning)' : 'var(--success)'
+        fill: item.Score <= 49 ? 'var(--danger)' : item.Score <= 75 ? 'var(--warning)' : 'var(--primary-cyan)'
     }));
   };
 
   const visualizationData = getVisualizationData(result?.gemini_forensic_report);
 
   return (
-    <div className="dashboard-container">
-      <header className="header">
-        <h1>Hackwizards Sentinel <span style={{fontSize: '0.9rem', color: 'var(--success)'}}>v2.0</span></h1>
-        <p>Advanced Multimodal Deepfake Forensics & Geometry Dashboard</p>
-      </header>
+    <div>
+      {/* Navbar */}
+      <nav className="top-navbar">
+        <div className="brand-title">Hackwizards Sentinel</div>
+        <div className="system-status">
+          <div className="status-dot"></div>
+          System Online
+        </div>
+      </nav>
 
-      {/* Input Analysis: Video Uploader & Progress */}
-      <div className="input-card">
-        <div className="section-title"><Activity size={18}/> Input Analysis</div>
+      {/* Main Grid Layout */}
+      <div className="dashboard-layout">
         
-        <div 
-          className={`upload-zone ${isDragging ? 'dragging' : ''} ${analysisState !== 'idle' ? 'processing' : ''}`}
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-          onDrop={handleDrop}
-          onClick={() => analysisState === 'idle' && fileInputRef.current.click()}
-        >
-          <input type="file" ref={fileInputRef} hidden accept="video/*" onChange={(e) => handleFileSelection(e.target.files[0])} disabled={analysisState !== 'idle'}/>
-          <UploadCloud className="upload-icon" size={64} />
-          <h2>Drag & Drop Video Here</h2>
-          <p style={{ color: 'var(--text-muted)' }}>or click to browse local files (MP4, MOV, AVI)</p>
+        {/* LEFT COLUMN */}
+        <div className="left-column">
           
-          {file && (
-            <div className="selected-file-details">
-                <FileVideo size={24}/>
-                <div>
-                  <div style={{fontWeight: 700}}>{file.name}</div>
-                  <div style={{fontSize: '0.8rem', color: 'var(--text-muted)'}}>{(file.size / (1024 * 1024)).toFixed(2)} MB</div>
-                </div>
+          {/* Target Acquisition Card */}
+          <div className="forensic-card">
+            <div className="card-title">
+              <Camera size={16} /> Video Session Data
             </div>
-          )}
-        </div>
-
-        {/* Real-time Progress Bar */}
-        {(analysisState === 'processing' || analysisState === 'error') && (
-            <div style={{marginTop: '1.5rem'}}>
-                <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.9rem'}}>
-                    <span>Scan Progress</span>
-                    <span>{progress}%</span>
+            
+            <div 
+              className={`upload-zone ${isDragging ? 'dragging' : ''}`}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              onClick={() => analysisState === 'idle' && fileInputRef.current.click()}
+            >
+              <input type="file" ref={fileInputRef} hidden accept="video/*" onChange={(e) => handleFileSelection(e.target.files[0])} disabled={analysisState !== 'idle'}/>
+              <UploadCloud size={48} color="var(--primary-cyan)" style={{marginBottom: '1rem'}} />
+              <div className="font-bold">Drag & Drop Video Stream</div>
+              <div className="text-sm text-muted">or click to browse local files (MP4, MOV)</div>
+              
+              {file && (
+                <div style={{marginTop: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', color: 'var(--primary-blue)'}}>
+                  <FileVideo size={18}/>
+                  <span className="font-bold">{file.name}</span>
+                  <span className="text-sm text-muted">({(file.size / (1024 * 1024)).toFixed(2)} MB)</span>
                 </div>
-                <div style={{width: '100%', height: '10px', backgroundColor: '#334155', borderRadius: '5px'}}>
-                    <div style={{
-                        width: `${progress}%`, 
-                        height: '100%', 
-                        backgroundColor: error ? 'var(--danger)' : 'var(--accent-blue)', 
-                        borderRadius: '5px', 
-                        transition: 'width 0.3s ease'
-                    }}></div>
-                </div>
-                {error && <p style={{color: 'var(--danger)', marginTop: '0.5rem', textAlign: 'center'}}>{error}</p>}
+              )}
             </div>
-        )}
 
-        <button 
-          className="scan-btn" 
-          onClick={analyzeVideo} 
-          disabled={!file || analysisState === 'processing'}
-        >
-          {analysisState === 'processing' ? <><Loader2 className="loading-spinner"/> Analyzing Multimodal Stream...</> : 'BEGIN FORENSIC SCAN'}
-        </button>
-      </div>
-
-      {/* Real-time Forensic Logs */}
-      {(realtimeLogs.length > 0) && (
-        <div className="input-card" style={{marginTop: '1.5rem'}}>
-            <div className="section-title"><Clock size={18}/> Detailed Forensic Logs</div>
-            <div className="log-scroll">
-              {realtimeLogs.map((log, idx) => <div key={idx} className="log-entry">{log}</div>)}
-            </div>
-        </div>
-      )}
-
-      {/* Overview Report: Analysis Results & Visualization */}
-      {result && analysisState === 'complete' && (
-        <div className="report-card" style={{marginTop: '1.5rem'}}>
-          <div className="section-title"><ShieldCheck size={18}/> Overview Report</div>
-          
-          <div className="overview-header">
-             <div className="results-grid" style={{gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem'}}>
-                
-                {/* Genuine Score Metric - FIXED OVERLAP */}
-                <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', backgroundColor: '#0f172a', padding: '2rem', borderRadius: '0.5rem', border: '1px solid #1e293b'}}>
-                  <div style={{fontSize: '5rem', fontWeight: 900, lineHeight: '1', margin: '0', color: genuineScore < 50 ? 'var(--danger)' : 'var(--success)'}}>
-                    {genuineScore}%
-                  </div>
-                  <div style={{fontSize: '0.9rem', marginTop: '1rem', fontWeight: 'bold', color: genuineScore < 50 ? 'var(--danger)' : 'var(--success)', textTransform: 'uppercase', letterSpacing: '0.1em'}}>
-                    Genuine Score
-                  </div>
-                </div>
-                
-                {/* Classification Metric */}
-                <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', backgroundColor: '#0f172a', padding: '2rem', borderRadius: '0.5rem', border: '1px solid #1e293b', color: genuineScore < 50 ? 'var(--danger)' : 'var(--success)'}}>
-                  <div className="classification-title" style={{marginBottom: '1rem'}}>Classification</div>
-                  <div style={{display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem'}}>
-                    {genuineScore < 50 ? <AlertTriangle size={36}/> : <ShieldCheck size={36}/>}
-                    <div style={{fontSize: '2rem', fontWeight: 800, textAlign: 'center'}}>
-                        {genuineScore < 50 ? 'MANIPULATED' : 'AUTHENTIC MEDIA'}
+            {/* Progress Bar */}
+            {(analysisState === 'processing' || analysisState === 'error') && (
+                <div style={{marginTop: '1.5rem'}}>
+                    <div style={{width: '100%', height: '8px', backgroundColor: '#e2e8f0', borderRadius: '4px', overflow: 'hidden'}}>
+                        <div style={{
+                            width: `${progress}%`, 
+                            height: '100%', 
+                            backgroundColor: error ? 'var(--danger)' : 'var(--primary-cyan)', 
+                            transition: 'width 0.3s ease'
+                        }}></div>
                     </div>
-                  </div>
-                  <div style={{fontSize: '0.9rem', opacity: 0.8, marginTop: '1rem'}}>System Confidence: {systemConfidence}%</div>
                 </div>
-             </div>
+            )}
 
-             {/* Dynamic Bar Chart: Visualizing Multi-factor check */}
-             <div style={{marginTop: '1rem', height: '220px'}}>
-                <h3 style={{fontSize: '0.8rem', color: 'var(--text-muted)', textAlign: 'center', marginBottom: '1rem', textTransform: 'uppercase'}}>Multi-Factor Forensic Analysis</h3>
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={visualizationData} layout="vertical" margin={{ top: 0, right: 30, left: 30, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-                    <XAxis type="number" domain={[0, 100]} stroke="var(--text-muted)"/>
-                    <YAxis dataKey="name" type="category" width={150} stroke="var(--text-muted)" style={{fontSize: '0.85rem'}}/>
-                    <Tooltip cursor={{fill: 'rgba(59, 130, 246, 0.1)'}} contentStyle={{backgroundColor: 'var(--card-dark)', border: '1px solid #334155'}}/>
-                    <Bar dataKey="Score" radius={4} label={{ position: 'right', fill: 'var(--text-main)' }}/>
-                  </BarChart>
-                </ResponsiveContainer>
-             </div>
+            <button className="scan-btn" onClick={analyzeVideo} disabled={!file || analysisState === 'processing'}>
+              {analysisState === 'processing' ? 'PROCESSING MULTIMODAL STREAM...' : 'BEGIN FORENSIC SCAN'}
+            </button>
           </div>
 
-          <div className="forensic-details-section">
-            <h3>Forensic Details (Gemini 2.5 Flash API)</h3>
-            <div className="forensic-report-text">
-                {/* We use .split to remove the ugly scoring block so the user only sees the text report */}
-                {result.gemini_forensic_report
-                  .split('---SCORE_BLOCK---')[0]
-                  .split('\n')
-                  .filter(para => para.trim() !== '')
-                  .map((para, i) => <p key={i}>{para}</p>)}
+          {/* Results: Bottom Left Section */}
+          {result && analysisState === 'complete' && (
+            <>
+              {/* Three Mini Summary Cards */}
+              <div className="summary-cards-row">
+                
+                {/* Gemini Details */}
+                <div className="mini-card">
+                  <div className="mini-card-header">
+                    <span style={{color: 'var(--text-muted)'}}>GEMINI VERDICT</span>
+                    <span className={`badge ${isDanger ? 'danger' : 'success'}`}>{isDanger ? 'FAILED' : 'AUTHENTIC'}</span>
+                  </div>
+                  <div className="text-sm">
+                    {/* We show the first 150 chars of the report to mimic the tiny text in the image */}
+                    {result.gemini_forensic_report.split('---SCORE_BLOCK---')[0].substring(0, 150)}...
+                  </div>
+                </div>
+
+                {/* OpenCV Details */}
+                <div className="mini-card">
+                  <div className="mini-card-header">
+                    <span style={{color: 'var(--text-muted)'}}>FACIAL MAPPING</span>
+                    <span className={`badge ${result.local_mesh_analysis.anomalies_flagged > 0 ? 'danger' : 'success'}`}>
+                      {result.local_mesh_analysis.anomalies_flagged > 0 ? 'ANOMALY' : 'LOCKED'}
+                    </span>
+                  </div>
+                  <div className="text-sm font-bold" style={{marginBottom: '0.5rem'}}>
+                    Spatial Anomalies: {result.local_mesh_analysis.anomalies_flagged}
+                  </div>
+                  <div style={{fontSize: '0.7rem', color: 'var(--text-muted)'}}>
+                    {result.local_mesh_analysis.details.slice(0,3).map((d, i) => <div key={i}>└ {d}</div>)}
+                  </div>
+                </div>
+
+                {/* Metadata */}
+                <div className="mini-card">
+                  <div className="mini-card-header">
+                    <span style={{color: 'var(--text-muted)'}}>AUDIT LOG</span>
+                    <span className="badge success">SECURED</span>
+                  </div>
+                  <div className="text-sm">
+                    <div><span className="font-bold">ID:</span> {result.database_id?.substring(0,8) || 'N/A'}</div>
+                    <div><span className="font-bold">File:</span> {result.filename}</div>
+                    <div><span className="font-bold">Frames:</span> {result.frames_extracted}</div>
+                  </div>
+                </div>
+
+              </div>
+
+              {/* Multi-Factor Chart (Vertical Bars) */}
+              <div className="forensic-card" style={{marginTop: '1.5rem'}}>
+                <div className="card-title"><Activity size={16} /> Multi-Factor Forensic Analysis</div>
+                <div style={{height: '220px', width: '100%'}}>
+                  <ResponsiveContainer>
+                    <BarChart data={visualizationData} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                      <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#64748b'}} />
+                      <YAxis axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#64748b'}} />
+                      <Tooltip cursor={{fill: '#f1f5f9'}} contentStyle={{borderRadius: '4px', border: 'none', boxShadow: '0 4px 6px rgba(0,0,0,0.1)'}}/>
+                      <Bar dataKey="Score" radius={[4, 4, 0, 0]} barSize={40} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </>
+          )}
+
+        </div>
+
+        {/* RIGHT COLUMN */}
+        <div className="right-column">
+          
+          {/* Classification Verdict Box */}
+          <div className="forensic-card" style={{display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '3rem 2rem'}}>
+            <div className={`score-circle ${isDanger ? 'danger' : 'success'}`}>
+              <div className="score-number">{genuineScore}%</div>
+              <div className="score-label">Genuine Score</div>
+            </div>
+            
+            <div style={{marginTop: '2rem', textAlign: 'center'}}>
+              <div className="text-sm text-muted font-bold" style={{letterSpacing: '0.1em', marginBottom: '0.5rem'}}>CLASSIFICATION</div>
+              <div className={`verdict-text ${isDanger ? 'danger' : 'success'}`}>
+                {isDanger ? 'MANIPULATED' : 'AUTHENTIC'}
+              </div>
+              <div className="text-sm text-muted" style={{marginTop: '0.5rem'}}>
+                System Confidence: {systemConfidence}%
+              </div>
             </div>
           </div>
 
-          <div className="face-mapping-section">
-            <h3>Facial Mapping (OpenCV Fast-Pass)</h3>
-            <div className="face-mapping-logs">
-                <p>❯ Face Detector Status: {result.local_mesh_analysis.faces_detected > 0 ? 'Face Map locked.' : 'No consistent face mesh.'}</p>
-                <p>❯ Local Tracking Anomalies Flagged: <span style={{color: result.local_mesh_analysis.anomalies_flagged > 0 ? 'var(--danger)' : 'var(--success)'}}>{result.local_mesh_analysis.anomalies_flagged}</span></p>
-                {result.local_mesh_analysis.details.slice(0,3).map((detail, idx) => <p key={idx} style={{fontFamily: 'monospace', fontSize: '0.8rem', color: 'var(--text-muted)'}}>   • {detail}</p>)}
+          {/* Terminal Logs */}
+          <div className="forensic-card" style={{padding: '0', overflow: 'hidden', border: 'none'}}>
+            <div style={{backgroundColor: '#1e293b', color: 'white', padding: '0.75rem 1rem', fontSize: '0.75rem', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '0.5rem'}}>
+              <Terminal size={14}/> REAL-TIME TERMINAL LOGS
+            </div>
+            <div className="terminal-window">
+              {realtimeLogs.map((log, idx) => (
+                <div key={idx} className={`terminal-line ${log.type}`}>
+                  <span style={{color: '#64748b'}}>[{log.time}]</span> {log.text}
+                </div>
+              ))}
+              {analysisState === 'processing' && <div className="terminal-line animate-pulse">_</div>}
             </div>
           </div>
 
         </div>
-      )}
+      </div>
     </div>
   );
 }
