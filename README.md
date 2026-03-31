@@ -5,91 +5,131 @@
 ![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688)
 ![Gemini](https://img.shields.io/badge/AI-Gemini_2.5_Flash-orange)
 
-## 📌 Problem Statement
-The proliferation of hyper-realistic manipulated media (Deepfakes) poses a critical threat to digital trust, security, and identity verification. Current single-layer detection systems are often easily bypassed by modern AI generators or suffer from massive processing delays.
+
+
+## ⚠️ The Problem Statement
+Modern generative AI (like Sora, Midjourney, and Runway) has evolved past generating static deepfakes. Today's AI can generate temporally consistent video, making traditional frame-by-frame image analysis obsolete. When standard detection models look at static frames, the "perfect" AI skin and lighting fool them into reporting "Authentic Media." A new, dynamic approach is required to catch spatial morphing, lip-sync misalignment, and temporal glitches.
 
 ## 💡 Solution Overview
-**Hackwizards Sentinel** is a high-speed, multi-layered digital forensics command center. Instead of relying on a single point of failure, our architecture utilizes a "Fast-Pass" local verification system paired with deep-cloud multimodal analysis. 
+**Hackwizards Sentinel** is a multi-layered, fault-tolerant digital forensics engine. Instead of relying on a single checkpoint, it uses a **"Fast-Pass + Multimodal Brain"** architecture:
+1. **Local Geometry Fast-Pass:** It streams the video through OpenCV to instantly track facial geometry, looking for spatial tracking loss (a massive indicator of AI morphing).
+2. **Multimodal Temporal Engine:** It uploads the raw video file to Google's Gemini 2.5 Flash API, bypassing static image limitations to natively analyze motion physics, lip-sync accuracy, and temporal flow. 
+3. **Objective Mathematical Scoring:** It forces the LLM to output a regex-parsable mathematical scoring block, removing AI bias and giving users an exact, quantifiable "Authenticity Index."
 
-We extract frames using a highly optimized native OpenCV pipeline, run local facial tracking to detect geometric anomalies (glitches/lost tracking), and simultaneously pipe the data into Google's Gemini 2.5 Flash API to detect temporal inconsistencies, lip-sync errors, and uncanny valley artifacts. Finally, all forensic reports are secured immutably in a MongoDB audit log.
+## ✨ Core Features
+* **Cinematic Cyber-Security Dashboard:** A glassmorphism, dark-mode React UI engineered with color psychology (Mint Green for Authentic, Crimson Red for Manipulated).
+* **Live Heuristic Breakdown Matrix:** Real-time Recharts visualizations showing exactly *why* a video was flagged across 5 dimensions.
+* **Real-Time Execution Logs:** A terminal-style logger that displays the backend's step-by-step pipeline state to the user.
+* **Immutable Forensic Logging:** Every scan is permanently archived in MongoDB with a unique Hash ID for enterprise auditing.
 
-## ✨ Features of the System
-* **Multi-Layered Detection:** Combines local Haar Cascade geometry tracking with Gemini's deep generative analysis.
-* **Cyber-Forensic Dashboard:** A sleek, dark-mode React UI with drag-and-drop video uploads and real-time scanning logs.
-* **Granular Scoring Engine:** Breaks down the "Genuine Score" into specific metrics: Visual Artifacts, Lipsync Alignment, Texture Stability, and Geometric Rigidity.
-* **Fault-Tolerant Architecture:** Modular backend design ensures that if cloud AI fails, the local tracking pipeline still functions.
-* **Audit Logging:** Every scan, including file metadata and AI findings, is instantly logged to a MongoDB database.
+## 🛠️ Tech Stack
+* **Frontend:** React.js, Vite, Axios, Recharts, Lucide-React, CSS3 (Glassmorphism).
+* **Backend:** Python 3.11, FastAPI, Uvicorn, OpenCV (cv2).
+* **AI & Machine Learning:** Google GenAI SDK (Gemini 2.5 Flash API), Haar Cascades.
+* **Database:** MongoDB (PyMongo).
+* **Package Management:** `uv` (Astral) for ultra-fast, strictly pinned Python environments.
 
-## 🛠️ Tech Stack Used
-**Frontend (Client)**
-* React.js (via Vite for blazing-fast HMR)
-* Axios (API client)
-* Recharts (Data visualization)
-* Lucide-React (Iconography)
+## 🏗️ System Architecture
 
-**Backend (Server)**
-* Python 3.11 (Managed by `uv` for ultra-fast dependency resolution)
-* FastAPI & Uvicorn (High-performance asynchronous server)
-* OpenCV (`opencv-python`) (Video extraction and local AI tracking)
-* Google GenAI SDK (`google-genai`) (Gemini 2.5 Flash API integration)
-* PyMongo (MongoDB connection)
+```mermaid
+graph TD
+    A[User UI - React/Vite] -->|Uploads .mp4| B(FastAPI Endpoint)
+    
+    subgraph Local Processing
+    B -->|Saves Temp Video| C[Video Extractor]
+    C -->|Extracts Frames| D[OpenCV Face Analyzer]
+    D -->|Calculates Spatial Anomalies| E{Anomaly Count}
+    end
+    
+    subgraph Cloud Processing
+    B -->|Uploads Raw Video| F[Gemini 2.5 Flash API]
+    E -->|Injects Data into Prompt| F
+    F -->|Analyzes Temporal/Audio Data| G[Mathematical Scoring Block]
+    end
+    
+    subgraph Data & Client Return
+    G --> H[Final Forensic JSON]
+    D --> H
+    H -->|Saves Audit Log| I[(MongoDB)]
+    H -->|Regex Parsed Results| A
+    end
+```
 
----
-
-## 🏗️ Architecture Diagram
-
-```text
-[ User / Browser ] 
-       │
-       ▼ (Uploads Video via React UI)
-[ FastAPI Server (main.py) ]
-       │
-       ├──► 1. [ video_extractor.py ] ──(Slices video into frames via OpenCV)
-       │
-       ├──► 2. [ face_analyzer.py ] ────(Local OpenCV Facial Tracking / Fast-Pass)
-       │
-       ├──► 3. [ ai_analyzer.py ] ──────(Uploads to Google Gemini 2.5 Flash API)
-       │
-       ▼ (Aggregates AI Reports & Charts)
-[ db.py ] ──► (Saves final JSON Report to MongoDB)
-       │
-       ▼
-[ React Dashboard ] (Renders classification, score, and forensic text)
-``` 
-
-## ⚙️ Setup and Installation Steps
-git clone 
+## 🚀 Setup and Installation
 
 ### Prerequisites
-* Python 3.11
-* Node.js & npm
-* `uv` package manager (`pip install uv`)
-* A Google Gemini API Key
-* MongoDB (Local installation or MongoDB Atlas URI)
+* **Python 3.11** (Strictly required for library compatibility)
+* **Node.js** (v18+)
+* **MongoDB** (Local instance running on `localhost:27017` or Atlas Cloud)
+* **Gemini API Key** (Get one from Google AI Studio)
 
 ### 1. Backend Setup
-Navigate to the backend directory:
+Navigate to the backend directory and set up the environment using `uv`:
+
 ```bash
-cd backend 
-Create a .env file in the backend folder and add your credentials:
-GEMINI_API_KEY=your_google_api_key_here
-MONGO_URI=mongodb://localhost:27017  # Or your MongoDB Atlas URI
-Install dependencies and run the server using uv:
+cd backend
+# Install uv if you don't have it: pip install uv
 uv venv --python 3.11
-uv sync
+
+# Activate virtual environment (Windows)
+.venv\Scripts\activate
+# Activate virtual environment (Mac/Linux)
+source .venv/bin/activate
+
+# Install dependencies
+uv pip install fastapi uvicorn python-multipart opencv-python google-genai pymongo python-dotenv
+```
+
+Create a `.env` file in the `backend` directory:
+```env
+GEMINI_API_KEY=your_google_api_key_here
+```
+
+Start the FastAPI Server:
+```bash
 uv run python main.py
+# The server will run on http://localhost:8000
 ```
-2. Frontend Setup
-Open a new terminal and navigate to the frontend directory:
- ``` cd frontend
+
+### 2. Frontend Setup
+Open a **new terminal**, navigate to the frontend directory, and install dependencies:
+
+```bash
+cd frontend
 npm install
-npm run dev
-The frontend will start at http://localhost:5173
 ```
-## 🚀 Usage Instructions
-- Open your browser and go to http://localhost:5173.
-- Drag and drop a valid video file (.mp4, .mov, .avi) into the upload zone.
-- Click "Begin Forensic Scan".
-- Watch the real-time terminal logs as the video is processed locally and in the cloud.
-Review the final Overview Report, noting the classification, specific forensic charts, and the Gemini text analysis.
+
+Ensure your `vite.config.js` is configured to proxy `/api` requests to `http://localhost:8000`.
+
+Start the React Development Server:
+```bash
+npm run dev
+# The UI will run on http://localhost:5173
+```
+
+## 📖 Usage Instructions
+1. Open your browser to `http://localhost:5173`.
+2. Drag and drop a video file (`.mp4`, `.mov`) into the "Target Acquisition" zone.
+3. Click **"Execute Forensic Scan"**.
+4. Watch the real-time execution logs as the system processes the video.
+5. Review the AI Consensus Report, Authenticity Index, and OpenCV Spatial Geometry logs.
+
+## Team Details
+- Team Name:Hack Wizards
+- Members:
+- Shivani 
+- Akshaya
+- Pranay
+- Praveen
+- Anil
+
+## 📊 Sample Data
+During development, the system was calibrated using:
+* **Genuine Media:** Raw smartphone camera footage showcasing natural lighting, camera noise, and realistic motion blur.
+* **Manipulated Media:** High-fidelity AI-generated videos featuring perfectly smooth "plastic" textures, micro-warping on clothing edges, and unnatural blink rates.
+
+## 🔮 Future Improvements
+* **Live Webcam Integration:** Streaming video directly from the browser to WebSockets for real-time meeting protection.
+* **PDF Report Generation:** Adding an export button for official forensic audits.
+* **Local Open-Source LLM Fallback:** Integrating models like LLaMA-3-Vision via Ollama to allow offline temporal analysis without API dependencies.
 
